@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "681736971312",
+    "project_id": "universityevoting2",
+    "storage_bucket": "universityevoting2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681736971312:android:c7ad83b4ea2ea8c21ff9f5",
+        "android_client_info": {
+          "package_name": "com.universityevotingapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnBU7rdrFnaZJtQyliLIrsx7PJJmy77ck"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

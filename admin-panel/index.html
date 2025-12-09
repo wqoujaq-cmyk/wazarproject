@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Voting Admin Panel</title>
+    <link rel="stylesheet" href="css/admin-styles.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="logo">📊</div>
+                <h1>Admin Panel</h1>
+                <p class="subtitle">University E-Voting System</p>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="emailInput">Email</label>
+                        <input type="email" id="emailInput" placeholder="admin@university.edu" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="passwordInput">Password</label>
+                        <input type="password" id="passwordInput" placeholder="Enter password" required>
+                    </div>
+                    
+                    <div id="loginError" class="error-message"></div>
+                    
+                    <button type="submit" class="btn btn-primary" id="loginBtn">
+                        <span id="loginBtnText">Login</span>
+                        <span id="loginBtnSpinner" class="spinner" style="display: none;"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Admin Dashboard -->
+    <div id="dashboardScreen" class="screen" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <span class="logo-small">📊</span>
+                <h1>E-Voting Admin</h1>
+            </div>
+            <div class="header-right">
+                <span id="adminName" class="admin-name"></span>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav>
+                <a href="#" class="nav-item active" data-page="overview">
+                    <span class="icon">📊</span>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item" data-page="elections">
+                    <span class="icon">🗳️</span>
+                    <span>Elections</span>
+                </a>
+                <a href="#" class="nav-item" data-page="candidates">
+                    <span class="icon">👤</span>
+                    <span>Candidates</span>
+                </a>
+                <a href="#" class="nav-item" data-page="polls">
+                    <span class="icon">📋</span>
+                    <span>Polls</span>
+                </a>
+                <a href="#" class="nav-item" data-page="users">
+                    <span class="icon">👥</span>
+                    <span>Users</span>
+                </a>
+                <a href="#" class="nav-item" data-page="results">
+                    <span class="icon">📈</span>
+                    <span>Results</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Page -->
+            <div id="overviewPage" class="page active">
+                <h2>Dashboard Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🗳️</div>
+                        <div class="stat-info">
+                            <h3 id="totalElections">0</h3>
+                            <p>Total Elections</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-info">
+                            <h3 id="totalPolls">0</h3>
+                            <p>Total Polls</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">0</h3>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <h3 id="totalVotes">0</h3>
+                            <p>Total Votes Cast</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Recent Elections</h3>
+                    <div id="recentElectionsList" class="list-container">
+                        <p class="loading">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Elections Page -->
+            <div id="electionsPage" class="page">
+                <div class="page-header">
+                    <h2>Elections Management</h2>
+                    <button class="btn btn-primary" id="createElectionBtn">+ Create Election</button>
+                </div>
+                <div id="electionsList" class="list-container">
+                    <p class="loading">Loading elections...</p>
+                </div>
+            </div>
+
+            <!-- Candidates Page -->
+            <div id="candidatesPage" class="page">
+                <div class="page-header">
+                    <h2>Candidates Management</h2>
+                    <button class="btn btn-primary" id="createCandidateBtn">+ Add Candidate</button>
+                </div>
+                <div id="candidatesList" class="list-container">
+                    <p class="loading">Loading candidates...</p>
+                </div>
+            </div>
+
+            <!-- Polls Page -->
+            <div id="pollsPage" class="page">
+                <div class="page-header">
+                    <h2>Polls Management</h2>
+                    <button class="btn btn-primary" id="createPollBtn">+ Create Poll</button>
+                </div>
+                <div id="pollsList" class="list-container">
+                    <p class="loading">Loading polls...</p>
+                </div>
+            </div>
+
+            <!-- Users Page -->
+            <div id="usersPage" class="page">
+                <div class="page-header">
+                    <h2>Users Management</h2>
+                    <button class="btn btn-primary" id="createUserBtn">+ Add User</button>
+                </div>
+                <div id="usersList" class="list-container">
+                    <p class="loading">Loading users...</p>
+                </div>
+            </div>
+
+            <!-- Results Page -->
+            <div id="resultsPage" class="page">
+                <h2>Results & Analytics</h2>
+                <div class="section">
+                    <h3>Election Results</h3>
+                    <div id="electionResultsList" class="list-container">
+                        <p class="loading">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Election Modal -->
+    <div id="electionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="electionModalTitle">Create Election</h2>
+                <span class="close-btn" onclick="closeElectionModal()">&times;</span>
+            </div>
+            <form id="electionForm">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="electionTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="electionDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Faculty Scope Type *</label>
+                    <select id="electionScopeType" required onchange="toggleFacultySelect()">
+                        <option value="">Select...</option>
+                        <option value="SINGLE_FACULTY">Single Faculty</option>
+                        <option value="MULTI_FACULTY">Multiple Faculties</option>
+                        <option value="ALL_FACULTIES">All Faculties</option>
+                    </select>
+                </div>
+                <div class="form-group" id="facultyScopeGroup" style="display: none;">
+                    <label>Select Faculties *</label>
+                    <div id="facultyCheckboxes">
+                        <label><input type="checkbox" value="Engineering"> Engineering</label><br>
+                        <label><input type="checkbox" value="Medicine"> Medicine</label><br>
+                        <label><input type="checkbox" value="Business"> Business</label><br>
+                        <label><input type="checkbox" value="Science"> Science</label><br>
+                        <label><input type="checkbox" value="Arts"> Arts</label><br>
+                        <label><input type="checkbox" value="Law"> Law</label><br>
+                        <label><input type="checkbox" value="Education"> Education</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Start Date & Time *</label>
+                    <input type="datetime-local" id="electionStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date & Time *</label>
+                    <input type="datetime-local" id="electionEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Status *</label>
+                    <select id="electionStatus" required>
+                        <option value="draft">Draft</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="active">Active</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                <div id="electionError" class="error-message"></div>
+                <button type="submit" class="btn btn-primary">Save Election</button>
+                <button type="button" class="btn btn-secondary" onclick="closeElectionModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Candidate Modal -->
+    <div id="candidateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Candidate</h2>
+                <span class="close-btn" onclick="closeCandidateModal()">&times;</span>
+            </div>
+            <form id="candidateForm">
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" id="candidateName" required>
+                </div>
+                <div class="form-group">
+                    <label>Election *</label>
+                    <select id="candidateElection" required>
+                        <option value="">Loading elections...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Faculty *</label>
+                    <select id="candidateFaculty" required>
+                        <option value="">Select...</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Medicine">Medicine</option>
+                        <option value="Business">Business</option>
+                        <option value="Science">Science</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Law">Law</option>
+                        <option value="Education">Education</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Bio/Manifesto</label>
+                    <textarea id="candidateBio" rows="4"></textarea>
+                </div>
+                <div id="candidateError" class="error-message"></div>
+                <button type="submit" class="btn btn-primary">Save Candidate</button>
+                <button type="button" class="btn btn-secondary" onclick="closeCandidateModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Poll Modal -->
+    <div id="pollModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Poll</h2>
+                <span class="close-btn" onclick="closePollModal()">&times;</span>
+            </div>
+            <form id="pollForm">
+                <div class="form-group">
+                    <label>Poll Question *</label>
+                    <input type="text" id="pollTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="pollDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Target Type *</label>
+                    <select id="pollTargetType" required onchange="togglePollFacultySelect()">
+                        <option value="">Select...</option>
+                        <option value="SINGLE_FACULTY">Single Faculty</option>
+                        <option value="MULTI_FACULTY">Multiple Faculties</option>
+                        <option value="ALL_FACULTIES">All Faculties</option>
+                    </select>
+                </div>
+                <div class="form-group" id="pollFacultyScopeGroup" style="display: none;">
+                    <label>Select Faculties *</label>
+                    <div id="pollFacultyCheckboxes">
+                        <label><input type="checkbox" value="Engineering"> Engineering</label><br>
+                        <label><input type="checkbox" value="Medicine"> Medicine</label><br>
+                        <label><input type="checkbox" value="Business"> Business</label><br>
+                        <label><input type="checkbox" value="Science"> Science</label><br>
+                        <label><input type="checkbox" value="Arts"> Arts</label><br>
+                        <label><input type="checkbox" value="Law"> Law</label><br>
+                        <label><input type="checkbox" value="Education"> Education</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Poll Options *</label>
+                    <div id="pollOptionsContainer">
+                        <input type="text" class="poll-option" placeholder="Option 1" required>
+                        <input type="text" class="poll-option" placeholder="Option 2" required>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addPollOption()">+ Add Option</button>
+                </div>
+                <div class="form-group">
+                    <label>Start Date & Time *</label>
+                    <input type="datetime-local" id="pollStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date & Time *</label>
+                    <input type="datetime-local" id="pollEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Status *</label>
+                    <select id="pollStatus" required>
+                        <option value="draft">Draft</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="active">Active</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                <div id="pollError" class="error-message"></div>
+                <button type="submit" class="btn btn-primary">Save Poll</button>
+                <button type="button" class="btn btn-secondary" onclick="closePollModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/users.js"></script>
+    <script type="module" src="js/elections.js"></script>
+    <script type="module" src="js/candidates.js"></script>
+    <script type="module" src="js/polls.js"></script>
+    <script type="module" src="js/results.js"></script>
+    
+    <!-- Main App Script -->
+    <script type="module">
+        import { initAuth } from './js/auth.js';
+        import { loadUsers } from './js/users.js';
+        import { loadElections } from './js/elections.js';
+        import { loadCandidates } from './js/candidates.js';
+        import './js/polls.js';
+        import './js/results.js';
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            initAuth();
+            
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = item.dataset.page;
+                    
+                    // Update active nav item
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Show corresponding page
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    document.getElementById(`${page}Page`).classList.add('active');
+                    
+                    // Load page data
+                    loadPageData(page);
+                });
+            });
+        });
+
+        function loadPageData(page) {
+            switch(page) {
+                case 'elections':
+                    loadElections();
+                    break;
+                case 'candidates':
+                    loadCandidates();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                // Add more cases as needed
+            }
+        }
+    </script>
+</body>
+</html>
+
