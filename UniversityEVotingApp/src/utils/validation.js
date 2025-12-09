@@ -122,6 +122,13 @@ export const validateRegistrationForm = (formData) => {
     errors.universityId = universityIdValidation.message;
   }
   
+  // Validate contact email
+  if (!formData.contactEmail || formData.contactEmail.trim().length === 0) {
+    errors.contactEmail = 'Contact email is required';
+  } else if (!validateEmail(formData.contactEmail)) {
+    errors.contactEmail = 'Please enter a valid email address';
+  }
+  
   // Validate faculty
   const facultyValidation = validateFaculty(formData.faculty);
   if (!facultyValidation.valid) {

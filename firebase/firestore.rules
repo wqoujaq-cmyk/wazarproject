@@ -26,18 +26,21 @@ service cloud.firestore {
     // Users Collection
     match /Users/{userId} {
       // Users can read their own document
-      allow read: if isOwner(userId) || isAdmin();
+      // Admins can read any user document (get) and list all users (list)
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
       
-      // Only create during registration (handled by auth)
-      allow create: if isOwner(userId) && 
-                       request.resource.data.role == 'voter' &&
-                       request.resource.data.user_id == userId;
+      // Users can create their own document during self-registration
+      // Admins can create any user document
+      allow create: if (isAuthenticated() && 
+                       userId == request.auth.uid &&
+                       request.resource.data.user_id == request.auth.uid &&
+                       request.resource.data.role == 'voter') ||
+                       isAdmin();
       
       // Users can only update their own profile (limited fields)
-      allow update: if isOwner(userId) && 
-                       request.resource.data.role == resource.data.role &&
-                       request.resource.data.faculty == resource.data.faculty &&
-                       request.resource.data.university_id == resource.data.university_id;
+      // Admins can update any user
+      allow update: if isOwner(userId) || isAdmin();
       
       // Only admins can delete
       allow delete: if isAdmin();

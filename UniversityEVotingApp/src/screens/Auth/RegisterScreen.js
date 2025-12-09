@@ -22,6 +22,7 @@ const RegisterScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
     name: '',
     universityId: '',
+    contactEmail: '',
     faculty: '',
     major: '',
     password: '',
@@ -146,6 +147,19 @@ const RegisterScreen = ({ navigation }) => {
             autoCorrect={false}
           />
           {errors.universityId && <Text style={styles.errorText}>{errors.universityId}</Text>}
+
+          <Text style={styles.label}>Contact Email *</Text>
+          <TextInput
+            style={[styles.input, errors.contactEmail && styles.inputError]}
+            placeholder="your.email@gmail.com"
+            value={formData.contactEmail}
+            onChangeText={(text) => updateField('contactEmail', text.toLowerCase())}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <Text style={styles.helperText}>For receiving notifications and updates</Text>
+          {errors.contactEmail && <Text style={styles.errorText}>{errors.contactEmail}</Text>}
 
           <Text style={styles.label}>Faculty *</Text>
           <TouchableOpacity
@@ -313,6 +327,12 @@ const styles = StyleSheet.create({
   errorText: {
     color: COLORS.error,
     fontSize: 14,
+    marginTop: -12,
+    marginBottom: 12,
+  },
+  helperText: {
+    color: COLORS.gray500,
+    fontSize: 12,
     marginTop: -12,
     marginBottom: 12,
   },

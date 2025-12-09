@@ -78,6 +78,10 @@
                     <span class="icon">📈</span>
                     <span>Results</span>
                 </a>
+                <a href="#" class="nav-item" data-page="emails">
+                    <span class="icon">📧</span>
+                    <span>Emails</span>
+                </a>
             </nav>
         </aside>
 
@@ -176,6 +180,77 @@
                     <h3>Election Results</h3>
                     <div id="electionResultsList" class="list-container">
                         <p class="loading">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emails Page -->
+            <div id="emailsPage" class="page">
+                <div class="page-header">
+                    <h2>Email Management</h2>
+                </div>
+                
+                <!-- Email Config Status -->
+                <div id="emailConfigStatus" class="config-status">
+                    <p>Checking email configuration...</p>
+                </div>
+
+                <!-- Email Actions Grid -->
+                <div class="email-actions-grid">
+                    <!-- Send Announcement -->
+                    <div class="email-card">
+                        <div class="email-card-icon">📢</div>
+                        <h3>Send Announcement</h3>
+                        <p>Send a custom announcement to all users or specific faculties</p>
+                        <button class="btn btn-primary" onclick="openAnnouncementModal()">Send Announcement</button>
+                    </div>
+
+                    <!-- Election Notification -->
+                    <div class="email-card">
+                        <div class="email-card-icon">🗳️</div>
+                        <h3>Election Notification</h3>
+                        <p>Notify eligible voters about upcoming or active elections</p>
+                        <button class="btn btn-primary" onclick="openElectionNotifyModal()">Notify Voters</button>
+                    </div>
+
+                    <!-- Poll Notification -->
+                    <div class="email-card">
+                        <div class="email-card-icon">📋</div>
+                        <h3>Poll Notification</h3>
+                        <p>Notify users about new polls they can participate in</p>
+                        <button class="btn btn-primary" onclick="openPollNotifyModal()">Notify Users</button>
+                    </div>
+
+                    <!-- Results Announcement -->
+                    <div class="email-card">
+                        <div class="email-card-icon">🏆</div>
+                        <h3>Results Announcement</h3>
+                        <p>Announce election or poll results to all participants</p>
+                        <button class="btn btn-primary" onclick="openResultsNotifyModal()">Announce Results</button>
+                    </div>
+
+                    <!-- Password Reset -->
+                    <div class="email-card">
+                        <div class="email-card-icon">🔑</div>
+                        <h3>Password Reset</h3>
+                        <p>Send password reset email to a specific user</p>
+                        <button class="btn btn-primary" onclick="openPasswordResetModal()">Reset Password</button>
+                    </div>
+
+                    <!-- Email Settings -->
+                    <div class="email-card">
+                        <div class="email-card-icon">⚙️</div>
+                        <h3>Email Settings</h3>
+                        <p>Configure EmailJS credentials and templates</p>
+                        <button class="btn btn-secondary" onclick="openEmailSettingsModal()">Configure</button>
+                    </div>
+                </div>
+
+                <!-- Email History -->
+                <div class="section" style="margin-top: 24px;">
+                    <h3>Recent Email Activity</h3>
+                    <div id="emailHistory" class="list-container">
+                        <p class="loading">No email history available</p>
                     </div>
                 </div>
             </div>
@@ -355,6 +430,297 @@
         </div>
     </div>
 
+    <!-- User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Add User</h2>
+                <span class="close-btn" onclick="closeUserModal()">&times;</span>
+            </div>
+            <form id="userForm">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="userName" required placeholder="Enter full name">
+                </div>
+                <div class="form-group">
+                    <label>University ID *</label>
+                    <input type="text" id="userUniversityId" required placeholder="e.g., ENG001">
+                    <small style="color: #666;">Used for login (becomes universityid@university.edu)</small>
+                </div>
+                <div class="form-group">
+                    <label>Contact Email *</label>
+                    <input type="email" id="userContactEmail" required placeholder="user@gmail.com">
+                    <small style="color: #666;">Real email for receiving notifications</small>
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" id="userPassword" placeholder="Min 6 characters">
+                    <small id="passwordHint" style="color: #666;">Required for new users</small>
+                </div>
+                <div class="form-group">
+                    <label>Faculty *</label>
+                    <select id="userFaculty" required>
+                        <option value="">Select Faculty...</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Medicine">Medicine</option>
+                        <option value="Business">Business</option>
+                        <option value="Science">Science</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Law">Law</option>
+                        <option value="Education">Education</option>
+                        <option value="Administration">Administration</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Major *</label>
+                    <input type="text" id="userMajor" required placeholder="e.g., Computer Science">
+                </div>
+                <div class="form-group">
+                    <label>Role *</label>
+                    <select id="userRole" required>
+                        <option value="voter">Voter (Student)</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status *</label>
+                    <select id="userStatus" required>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+                <div id="userError" class="error-message"></div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary" id="saveUserBtn">Save User</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div id="announcementModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Send Announcement</h2>
+                <span class="close-btn" onclick="closeAnnouncementModal()">&times;</span>
+            </div>
+            <form id="announcementForm">
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <input type="text" id="announcementSubject" required placeholder="Enter email subject">
+                </div>
+                <div class="form-group">
+                    <label>Message *</label>
+                    <textarea id="announcementMessage" rows="6" required placeholder="Enter your announcement message"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Send To *</label>
+                    <select id="announcementTarget" required>
+                        <option value="all">All Users</option>
+                        <option value="voters">All Voters Only</option>
+                        <option value="admins">Admins Only</option>
+                        <option value="faculty">Specific Faculty</option>
+                    </select>
+                </div>
+                <div class="form-group" id="announcementFacultyGroup" style="display: none;">
+                    <label>Select Faculty *</label>
+                    <select id="announcementFaculty">
+                        <option value="Engineering">Engineering</option>
+                        <option value="Medicine">Medicine</option>
+                        <option value="Business">Business</option>
+                        <option value="Science">Science</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Law">Law</option>
+                        <option value="Education">Education</option>
+                    </select>
+                </div>
+                <div id="announcementError" class="error-message"></div>
+                <div id="announcementSuccess" class="success-message" style="display: none;"></div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary" id="sendAnnouncementBtn">Send Announcement</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeAnnouncementModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div id="passwordResetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Send Password Reset</h2>
+                <span class="close-btn" onclick="closePasswordResetModal()">&times;</span>
+            </div>
+            <form id="passwordResetForm">
+                <div class="form-group">
+                    <label>University ID *</label>
+                    <input type="text" id="resetUniversityId" required placeholder="e.g., ENG001">
+                    <small>The user will receive a password reset email</small>
+                </div>
+                <div id="resetError" class="error-message"></div>
+                <div id="resetSuccess" class="success-message" style="display: none;"></div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary" id="sendResetBtn">Send Reset Email</button>
+                    <button type="button" class="btn btn-secondary" onclick="closePasswordResetModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Election Notification Modal -->
+    <div id="electionNotifyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Send Election Notification</h2>
+                <span class="close-btn" onclick="closeElectionNotifyModal()">&times;</span>
+            </div>
+            <form id="electionNotifyForm">
+                <div class="form-group">
+                    <label>Select Election *</label>
+                    <select id="notifyElectionSelect" required>
+                        <option value="">Loading elections...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Custom Message (Optional)</label>
+                    <textarea id="electionNotifyMessage" rows="3" placeholder="Add a custom message to the notification"></textarea>
+                </div>
+                <div id="electionNotifyError" class="error-message"></div>
+                <div id="electionNotifySuccess" class="success-message" style="display: none;"></div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary" id="sendElectionNotifyBtn">Send Notifications</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeElectionNotifyModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Poll Notification Modal -->
+    <div id="pollNotifyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Send Poll Notification</h2>
+                <span class="close-btn" onclick="closePollNotifyModal()">&times;</span>
+            </div>
+            <form id="pollNotifyForm">
+                <div class="form-group">
+                    <label>Select Poll *</label>
+                    <select id="notifyPollSelect" required>
+                        <option value="">Loading polls...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Custom Message (Optional)</label>
+                    <textarea id="pollNotifyMessage" rows="3" placeholder="Add a custom message to the notification"></textarea>
+                </div>
+                <div id="pollNotifyError" class="error-message"></div>
+                <div id="pollNotifySuccess" class="success-message" style="display: none;"></div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary" id="sendPollNotifyBtn">Send Notifications</button>
+                    <button type="button" class="btn btn-secondary" onclick="closePollNotifyModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Notification Modal -->
+    <div id="resultsNotifyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Announce Results</h2>
+                <span class="close-btn" onclick="closeResultsNotifyModal()">&times;</span>
+            </div>
+            <form id="resultsNotifyForm">
+                <div class="form-group">
+                    <label>Type *</label>
+                    <select id="resultsType" required onchange="loadResultsOptions()">
+                        <option value="">Select type...</option>
+                        <option value="election">Election Results</option>
+                        <option value="poll">Poll Results</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Select *</label>
+                    <select id="resultsSelect" required>
+                        <option value="">Select type first...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Custom Message (Optional)</label>
+                    <textarea id="resultsNotifyMessage" rows="3" placeholder="Add a custom message"></textarea>
+                </div>
+                <div id="resultsNotifyError" class="error-message"></div>
+                <div id="resultsNotifySuccess" class="success-message" style="display: none;"></div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary" id="sendResultsNotifyBtn">Announce Results</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeResultsNotifyModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Email Settings Modal -->
+    <div id="emailSettingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Email Settings (EmailJS)</h2>
+                <span class="close-btn" onclick="closeEmailSettingsModal()">&times;</span>
+            </div>
+            <div class="settings-info">
+                <p>To enable email functionality, you need to set up EmailJS:</p>
+                <ol>
+                    <li>Go to <a href="https://www.emailjs.com/" target="_blank">emailjs.com</a> and create a free account</li>
+                    <li>Create an Email Service (Gmail, Outlook, etc.)</li>
+                    <li>Create email templates for each type (welcome, notification, etc.)</li>
+                    <li>Copy your credentials below</li>
+                </ol>
+            </div>
+            <form id="emailSettingsForm">
+                <div class="form-group">
+                    <label>Public Key *</label>
+                    <input type="text" id="emailPublicKey" placeholder="Your EmailJS public key">
+                </div>
+                <div class="form-group">
+                    <label>Service ID *</label>
+                    <input type="text" id="emailServiceId" placeholder="Your EmailJS service ID">
+                </div>
+                <div class="form-group">
+                    <label>Welcome Template ID</label>
+                    <input type="text" id="templateWelcome" placeholder="template_welcome">
+                    <small style="color: #666;">For new user welcome emails</small>
+                </div>
+                <div class="form-group">
+                    <label>Notification Template ID</label>
+                    <input type="text" id="templateNotify" placeholder="template_notify">
+                    <small style="color: #666;">For election/poll notifications</small>
+                </div>
+                <div class="form-group">
+                    <label>Announcement Template ID</label>
+                    <input type="text" id="templateAnnounce" placeholder="template_announce">
+                    <small style="color: #666;">For custom announcements</small>
+                </div>
+                <div class="form-group">
+                    <label>Results Template ID</label>
+                    <input type="text" id="templateResults" placeholder="template_results">
+                    <small style="color: #666;">For results announcements</small>
+                </div>
+                <div class="form-group">
+                    <label>Password Reset Template ID</label>
+                    <input type="text" id="templateReset" placeholder="template_reset">
+                    <small style="color: #666;">For password reset requests</small>
+                </div>
+                <div id="settingsError" class="error-message"></div>
+                <div id="settingsSuccess" class="success-message" style="display: none;"></div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEmailSettingsModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/auth.js"></script>
@@ -363,6 +729,7 @@
     <script type="module" src="js/candidates.js"></script>
     <script type="module" src="js/polls.js"></script>
     <script type="module" src="js/results.js"></script>
+    <script type="module" src="js/emails.js"></script>
     
     <!-- Main App Script -->
     <script type="module">
@@ -370,12 +737,14 @@
         import { loadUsers } from './js/users.js';
         import { loadElections } from './js/elections.js';
         import { loadCandidates } from './js/candidates.js';
+        import { initEmails, checkEmailConfig } from './js/emails.js';
         import './js/polls.js';
         import './js/results.js';
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', () => {
             initAuth();
+            initEmails();
             
             // Navigation
             document.querySelectorAll('.nav-item').forEach(item => {
@@ -408,7 +777,9 @@
                 case 'users':
                     loadUsers();
                     break;
-                // Add more cases as needed
+                case 'emails':
+                    checkEmailConfig();
+                    break;
             }
         }
     </script>

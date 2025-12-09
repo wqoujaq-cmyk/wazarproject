@@ -500,6 +500,17 @@ tbody tr:hover {
     color: var(--black);
 }
 
+/* Form Buttons */
+.form-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}
+
+.form-buttons .btn {
+    flex: 1;
+}
+
 /* Poll Options */
 .poll-option {
     width: 100%;
@@ -532,6 +543,100 @@ tbody tr:hover {
 #pollFacultyCheckboxes input {
     margin-right: var(--spacing-sm);
     cursor: pointer;
+}
+
+/* Email Page Styles */
+.email-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.email-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.email-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.email-card-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+}
+
+.email-card h3 {
+    color: var(--black);
+    margin-bottom: var(--spacing-sm);
+}
+
+.email-card p {
+    color: var(--gray-700);
+    font-size: 14px;
+    margin-bottom: var(--spacing-lg);
+    min-height: 40px;
+}
+
+.email-card .btn {
+    width: 100%;
+}
+
+/* Email Config Status */
+.config-status {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.config-status.config-ok {
+    background-color: #E8F5E9;
+    border: 1px solid var(--success);
+}
+
+.config-status.config-warning {
+    background-color: #FFF3E0;
+    border: 1px solid var(--warning);
+}
+
+.config-status .status-icon {
+    margin-right: var(--spacing-sm);
+}
+
+/* Success Message */
+.success-message {
+    color: var(--success);
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    background-color: #E8F5E9;
+    text-align: center;
+}
+
+/* Settings Info */
+.settings-info {
+    background-color: var(--gray-100);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.settings-info ol {
+    margin: var(--spacing-md) 0 0 var(--spacing-lg);
+}
+
+.settings-info li {
+    margin-bottom: var(--spacing-sm);
+}
+
+.settings-info a {
+    color: var(--primary);
 }
 
 /* Responsive */

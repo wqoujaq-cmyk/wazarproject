@@ -101,6 +101,14 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.errorText}>{errors.password}</Text>
           )}
 
+          {/* Forgot Password Link */}
+          <TouchableOpacity 
+            style={styles.forgotPassword}
+            onPress={() => navigation.navigate('ForgotPassword')}
+          >
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </TouchableOpacity>
+
           {/* Login Button */}
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -221,6 +229,14 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 14,
     fontWeight: '600',
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 8,
+  },
+  forgotPasswordText: {
+    color: COLORS.primary,
+    fontSize: 14,
   },
 });
 

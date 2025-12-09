@@ -14,6 +14,7 @@ import firestore from '@react-native-firebase/firestore';
 // Only import screens that work
 import LoginScreen from './src/screens/Auth/LoginScreen';
 import RegisterScreen from './src/screens/Auth/RegisterScreen';
+import ForgotPasswordScreen from './src/screens/Auth/ForgotPasswordScreen';
 
 import COLORS from './src/styles/colors';
 
@@ -232,6 +233,7 @@ const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: true, title: 'Register', headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: '#fff' }} />
+    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: true, title: 'Forgot Password', headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: '#fff' }} />
   </Stack.Navigator>
 );
 

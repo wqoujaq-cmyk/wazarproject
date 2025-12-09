@@ -1,12 +1,57 @@
 // Authentication Service
 import { auth, firestore, storage, COLLECTIONS, ROLES } from '../config/firebase';
 
+// EmailJS Configuration for welcome emails
+const EMAILJS_CONFIG = {
+  serviceId: 'service_ly8htul',
+  templateId: 'template_sghhqdn',
+  publicKey: 'EPO61S4tPNKPKy6UH',
+};
+
+/**
+ * Send welcome email via EmailJS API
+ */
+const sendWelcomeEmail = async (userData) => {
+  try {
+    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        service_id: EMAILJS_CONFIG.serviceId,
+        template_id: EMAILJS_CONFIG.templateId,
+        user_id: EMAILJS_CONFIG.publicKey,
+        template_params: {
+          to_name: userData.name,
+          to_email: userData.contactEmail,
+          university_id: userData.universityId,
+          faculty: userData.faculty,
+          major: userData.major,
+          role: 'voter',
+        },
+      }),
+    });
+    
+    if (response.ok) {
+      console.log('Welcome email sent successfully');
+      return true;
+    } else {
+      console.warn('Failed to send welcome email:', await response.text());
+      return false;
+    }
+  } catch (error) {
+    console.warn('Error sending welcome email:', error);
+    return false;
+  }
+};
+
 /**
  * Register a new user
  */
 export const registerUser = async (userData) => {
   try {
-    const { name, universityId, faculty, major, password, photoUri } = userData;
+    const { name, universityId, contactEmail, faculty, major, password, photoUri } = userData;
     
     // Create email from university ID (e.g., ENG001@university.edu)
     // Remove spaces and special characters for valid email
@@ -30,6 +75,7 @@ export const registerUser = async (userData) => {
       .set({
         user_id: uid,
         university_id: universityId,
+        contact_email: contactEmail,
         name: name,
         faculty: faculty,
         major: major,
@@ -38,6 +84,15 @@ export const registerUser = async (userData) => {
         is_active: true,
         created_at: firestore.FieldValue.serverTimestamp(),
       });
+    
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail({
+      name,
+      contactEmail,
+      universityId,
+      faculty,
+      major,
+    });
     
     return {
       success: true,
