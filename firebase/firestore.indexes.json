@@ -1,0 +1,174 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "Elections",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "start_date",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Elections",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "faculty_scope",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Polls",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "start_date",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Polls",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "target_faculties",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Votes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "election_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Votes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Votes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "election_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "candidate_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "PollVotes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "poll_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "PollVotes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "PollVotes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "poll_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "option_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Candidates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "election_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "faculty",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "PollOptions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "poll_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "order",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
+

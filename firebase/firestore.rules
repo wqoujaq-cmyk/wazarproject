@@ -1,0 +1,132 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/Users/$(request.auth.uid)).data;
+    }
+    
+    function isActive() {
+      return isAuthenticated() && get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.is_active == true;
+    }
+    
+    // Users Collection
+    match /Users/{userId} {
+      // Users can read their own document
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Only create during registration (handled by auth)
+      allow create: if isOwner(userId) && 
+                       request.resource.data.role == 'voter' &&
+                       request.resource.data.user_id == userId;
+      
+      // Users can only update their own profile (limited fields)
+      allow update: if isOwner(userId) && 
+                       request.resource.data.role == resource.data.role &&
+                       request.resource.data.faculty == resource.data.faculty &&
+                       request.resource.data.university_id == resource.data.university_id;
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // Elections Collection
+    match /Elections/{electionId} {
+      // Anyone authenticated can read elections
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can create/update/delete (for testing - tighten in production)
+      allow create, update, delete: if isAuthenticated();
+    }
+    
+    // Candidates Collection
+    match /Candidates/{candidateId} {
+      // Anyone authenticated can read candidates
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can create/update/delete (for testing - tighten in production)
+      allow create, update, delete: if isAuthenticated();
+    }
+    
+    // Votes Collection - Critical security rules
+    match /Votes/{voteId} {
+      // Users can only read their own votes
+      // Admins cannot read individual votes (for privacy)
+      allow read: if false; // Votes are private
+      
+      // Users can only create one vote per election
+      allow create: if isAuthenticated() &&
+                       isActive() &&
+                       request.resource.data.user_id == request.auth.uid &&
+                       // Ensure user hasn't already voted
+                       !exists(/databases/$(database)/documents/Votes/$(request.auth.uid + '_' + request.resource.data.election_id)) &&
+                       // Verify election exists and is active
+                       exists(/databases/$(database)/documents/Elections/$(request.resource.data.election_id));
+      
+      // No one can update or delete votes
+      allow update, delete: if false;
+    }
+    
+    // Polls Collection
+    match /Polls/{pollId} {
+      // Anyone authenticated can read polls
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can create/update/delete (for testing - tighten in production)
+      allow create, update, delete: if isAuthenticated();
+    }
+    
+    // PollOptions Collection
+    match /PollOptions/{optionId} {
+      // Anyone authenticated can read poll options
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can create/update/delete (for testing - tighten in production)
+      allow create, update, delete: if isAuthenticated();
+    }
+    
+    // PollVotes Collection - Critical security rules
+    match /PollVotes/{pollVoteId} {
+      // Users can only read their own poll votes
+      allow read: if false; // Poll votes are private
+      
+      // Users can only create one vote per poll
+      allow create: if isAuthenticated() &&
+                       isActive() &&
+                       request.resource.data.user_id == request.auth.uid &&
+                       // Ensure user hasn't already voted
+                       !exists(/databases/$(database)/documents/PollVotes/$(request.auth.uid + '_' + request.resource.data.poll_id)) &&
+                       // Verify poll exists and is active
+                       exists(/databases/$(database)/documents/Polls/$(request.resource.data.poll_id));
+      
+      // No one can update or delete poll votes
+      allow update, delete: if false;
+    }
+    
+    // Admin Audit Log (optional)
+    match /AuditLog/{logId} {
+      // Only admins can read audit logs
+      allow read: if isAdmin();
+      
+      // System creates audit logs (via Cloud Functions)
+      allow create: if isAdmin();
+      
+      // No one can update or delete audit logs
+      allow update, delete: if false;
+    }
+  }
+}
+

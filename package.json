@@ -1,0 +1,46 @@
+{
+  "name": "university-evoting-project",
+  "version": "1.0.0",
+  "description": "E-Voting & Polling Mobile Application for University Student Council",
+  "main": "index.js",
+  "scripts": {
+    "mobile": "cd mobile-app && npm start",
+    "mobile:android": "cd mobile-app && npx react-native run-android",
+    "mobile:ios": "cd mobile-app && npx react-native run-ios",
+    "admin": "cd admin-panel && live-server",
+    "docs": "echo 'Documentation available in /documentation folder'",
+    "setup": "npm run setup:mobile && npm run setup:admin",
+    "setup:mobile": "cd mobile-app && npm install",
+    "setup:admin": "npm install -g live-server"
+  },
+  "keywords": [
+    "e-voting",
+    "elections",
+    "polls",
+    "university",
+    "student-council",
+    "react-native",
+    "firebase"
+  ],
+  "author": "University E-Voting Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/university-evoting"
+  },
+  "dependencies": {
+    "@react-native-firebase/app": "^23.5.0",
+    "@react-native-firebase/auth": "^23.5.0",
+    "@react-native-firebase/firestore": "^23.5.0",
+    "@react-native-firebase/storage": "^23.5.0",
+    "@react-navigation/bottom-tabs": "^7.8.4",
+    "@react-navigation/native": "^7.1.19",
+    "@react-navigation/stack": "^7.6.3",
+    "react-native-gesture-handler": "^2.29.1",
+    "react-native-image-picker": "^8.2.1",
+    "react-native-reanimated": "^4.1.5",
+    "react-native-safe-area-context": "^5.6.2",
+    "react-native-screens": "^4.18.0",
+    "react-native-vector-icons": "^10.3.0"
+  }
+}

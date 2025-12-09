@@ -1,0 +1,31 @@
+========================================
+QUICK START - Build APK After Restart
+========================================
+
+1. Restart your laptop
+
+2. After restart, go to: D:\Wazar Project\
+
+3. Right-click on: BUILD_APK.bat
+
+4. Click "Run as administrator"
+
+5. WAIT 15-20 minutes (don't close the window!)
+
+6. When done, you'll see:
+   "BUILD SUCCESSFUL!"
+   
+7. A folder will open with app-debug.apk
+
+8. Copy app-debug.apk to your phone and install!
+
+========================================
+
+If it fails, use Android Studio instead:
+- Open Android Studio
+- Open project: D:\Wazar Project\UniversityEVotingApp\android
+- Build → Build APK(s)
+- Wait for completion
+
+========================================
+

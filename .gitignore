@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Build outputs
+*.jsbundle
+build/
+.gradle/
+local.properties
+
+# iOS
+ios/Pods/
+ios/build/
+*.xcworkspace
+DerivedData/
+
+# Android
+*.apk
+*.aab
+*.keystore
+!debug.keystore
+
+# Metro
+.metro-health-check*
+
+# Misc
+.env
+.env.local
+coverage/
+
