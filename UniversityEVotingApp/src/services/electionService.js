@@ -1,6 +1,5 @@
 // Election Service
 import { firestore, COLLECTIONS, STATUS } from '../config/firebase';
-import firebase from '@react-native-firebase/firestore';
 import { getCurrentUser } from './authService';
 import { canUserVoteInElection, isActiveNow } from '../utils/helpers';
 
@@ -202,7 +201,7 @@ export const castElectionVote = async (electionId, candidateId, userFaculty) => 
         user_id: currentUser.uid,
         candidate_id: candidateId,
         faculty: userFaculty,
-        timestamp: firebase.FieldValue.serverTimestamp(),
+        timestamp: new Date(),
       });
     
     return {
