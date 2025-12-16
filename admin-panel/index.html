@@ -177,6 +177,21 @@
                     <h2>Users Management</h2>
                     <button class="btn btn-primary" id="createUserBtn">+ Add User</button>
                 </div>
+                
+                <!-- Password Reset Requests Section -->
+                <div class="password-reset-section" id="passwordResetSection">
+                    <div class="section-header-inline">
+                        <h3>🔑 Password Reset Requests</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="loadPasswordResetRequests()">🔄 Refresh</button>
+                    </div>
+                    <div id="passwordResetList" class="password-reset-list">
+                        <p class="loading">Loading requests...</p>
+                    </div>
+                </div>
+                
+                <div class="page-header" style="margin-top: 20px;">
+                    <h3>👥 All Users</h3>
+                </div>
                 <div id="usersList" class="list-container">
                     <p class="loading">Loading users...</p>
                 </div>

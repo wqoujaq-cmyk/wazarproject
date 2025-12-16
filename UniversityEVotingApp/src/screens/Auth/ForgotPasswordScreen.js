@@ -21,6 +21,14 @@ const EMAILJS_CONFIG = {
   publicKey: 'EPO61S4tPNKPKy6UH',
 };
 
+// Password Reset Portal URL - UPDATE THIS with your actual hosted URL
+const RESET_PORTAL_URL = 'https://wazar-1a851.web.app/reset-password.html';
+
+// Generate a 6-digit reset token
+const generateResetToken = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
 const ForgotPasswordScreen = ({ navigation }) => {
   const [universityId, setUniversityId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -60,7 +68,25 @@ const ForgotPasswordScreen = ({ navigation }) => {
         return;
       }
 
-      // Send password reset request email via EmailJS
+      // Generate a unique reset token
+      const resetToken = generateResetToken();
+      
+      // Store the token in Firestore
+      await firestore()
+        .collection('PasswordResetTokens')
+        .add({
+          university_id: universityId.toUpperCase(),
+          user_id: usersSnapshot.docs[0].id,
+          token: resetToken,
+          created_at: new Date(),
+          used: false,
+          contact_email: contactEmail,
+        });
+
+      // Create reset link with token and ID
+      const resetLink = `${RESET_PORTAL_URL}?token=${resetToken}&id=${universityId.toUpperCase()}`;
+
+      // Send password reset email via EmailJS
       const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: {
@@ -75,6 +101,9 @@ const ForgotPasswordScreen = ({ navigation }) => {
             to_email: contactEmail,
             university_id: universityId.toUpperCase(),
             user_name: userData.name,
+            reset_token: resetToken,
+            reset_link: resetLink,
+            expiry_time: '24 hours',
           },
         }),
       });
@@ -82,8 +111,8 @@ const ForgotPasswordScreen = ({ navigation }) => {
       if (response.ok) {
         setSent(true);
         Alert.alert(
-          'Request Sent',
-          `A password reset request has been sent to your email (${contactEmail}). Please check your inbox and follow the instructions.`,
+          'Reset Link Sent! ✉️',
+          `A password reset link has been sent to ${contactEmail}.\n\nThe link contains your 6-digit verification code.\n\nThis link will expire in 24 hours.`,
           [{ text: 'OK', onPress: () => navigation.goBack() }]
         );
       } else {
@@ -128,6 +157,14 @@ const ForgotPasswordScreen = ({ navigation }) => {
             editable={!sent}
           />
 
+          {/* Info Box */}
+          <View style={styles.infoBox}>
+            <Text style={styles.infoIcon}>ℹ️</Text>
+            <Text style={styles.infoText}>
+              You will receive an email with a 6-digit code and a link to reset your password. The link is valid for 24 hours.
+            </Text>
+          </View>
+
           {/* Submit Button */}
           <TouchableOpacity
             style={[styles.button, (loading || sent) && styles.buttonDisabled]}
@@ -138,7 +175,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
               <ActivityIndicator color={COLORS.white} />
             ) : (
               <Text style={styles.buttonText}>
-                {sent ? 'Request Sent' : 'Send Reset Link'}
+                {sent ? '✓ Reset Link Sent' : 'Send Reset Link'}
               </Text>
             )}
           </TouchableOpacity>
@@ -154,8 +191,15 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
         {/* Help Text */}
         <View style={styles.helpContainer}>
+          <Text style={styles.helpTitle}>How it works:</Text>
+          <View style={styles.stepContainer}>
+            <Text style={styles.step}>1️⃣ Enter your University ID above</Text>
+            <Text style={styles.step}>2️⃣ Check your email for the reset link</Text>
+            <Text style={styles.step}>3️⃣ Click the link and enter your new password</Text>
+            <Text style={styles.step}>4️⃣ Log in with your new password</Text>
+          </View>
           <Text style={styles.helpText}>
-            If you don't receive an email, please contact the administrator.
+            If you don't receive an email within 5 minutes, check your spam folder or contact the administrator.
           </Text>
         </View>
       </ScrollView>
@@ -210,7 +254,27 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     color: COLORS.textPrimary,
+    marginBottom: 16,
+  },
+  infoBox: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 8,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  infoIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#1E40AF',
+    lineHeight: 18,
   },
   button: {
     backgroundColor: COLORS.primary,
@@ -237,14 +301,31 @@ const styles = StyleSheet.create({
   },
   helpContainer: {
     marginTop: 40,
-    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 16,
+  },
+  helpTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: 12,
+  },
+  stepContainer: {
+    marginBottom: 12,
+  },
+  step: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: 6,
+    paddingLeft: 4,
   },
   helpText: {
     color: COLORS.textSecondary,
     fontSize: 12,
     textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
 
 export default ForgotPasswordScreen;
-

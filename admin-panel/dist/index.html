@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Voting Admin Panel</title>
-  <script type="module" crossorigin src="/assets/main-BWKXimKN.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/main-BlnX7wVo.css">
+  <script type="module" crossorigin src="/assets/main-DKGMJxTR.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="stylesheet" crossorigin href="/assets/main--mRZGEd0.css">
 </head>
 <body>
     <!-- Login Screen -->
@@ -177,6 +178,21 @@
                 <div class="page-header">
                     <h2>Users Management</h2>
                     <button class="btn btn-primary" id="createUserBtn">+ Add User</button>
+                </div>
+                
+                <!-- Password Reset Requests Section -->
+                <div class="password-reset-section" id="passwordResetSection">
+                    <div class="section-header-inline">
+                        <h3>🔑 Password Reset Requests</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="loadPasswordResetRequests()">🔄 Refresh</button>
+                    </div>
+                    <div id="passwordResetList" class="password-reset-list">
+                        <p class="loading">Loading requests...</p>
+                    </div>
+                </div>
+                
+                <div class="page-header" style="margin-top: 20px;">
+                    <h3>👥 All Users</h3>
                 </div>
                 <div id="usersList" class="list-container">
                     <p class="loading">Loading users...</p>

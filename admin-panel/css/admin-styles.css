@@ -317,6 +317,23 @@ body {
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
 }
 
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning), #D97706);
+    color: var(--white);
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
+.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+.btn-sm {
+    font-size: 12px;
+    padding: 6px 12px;
+}
+
 .btn-success {
     background: linear-gradient(135deg, var(--success), var(--accent-dark));
     color: var(--white);
@@ -1788,4 +1805,82 @@ select option {
     .dashboard-sections {
         grid-template-columns: 1fr;
     }
+}
+
+/* Password Reset Section */
+.password-reset-section {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.section-header-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.section-header-inline h3 {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.password-reset-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.reset-request-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--surface-mid);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid var(--glass-border);
+}
+
+.reset-request-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.reset-request-user {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.reset-request-email {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.reset-request-time {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.reset-request-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.no-reset-requests {
+    text-align: center;
+    color: var(--text-muted);
+    padding: var(--spacing-lg);
+    font-size: 14px;
+}
+
+.no-reset-requests span {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 8px;
 }

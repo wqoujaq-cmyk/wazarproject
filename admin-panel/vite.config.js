@@ -7,6 +7,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: './index.html',
+        resetPassword: './reset-password.html',
       },
       // Don't bundle external Firebase CDN imports
       external: [
