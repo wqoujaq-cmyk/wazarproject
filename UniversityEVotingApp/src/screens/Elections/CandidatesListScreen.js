@@ -30,7 +30,8 @@ const CandidatesListScreen = ({ route, navigation }) => {
         return;
       }
 
-      const result = await getCandidatesForElection(election.id, userResult.userData.faculty);
+      // Get all candidates for this election (don't filter by user's faculty)
+      const result = await getCandidatesForElection(election.id);
       if (result.success) {
         setCandidates(result.candidates);
       }

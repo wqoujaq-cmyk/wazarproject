@@ -8,8 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { getActivePollsForUser } from '../../services/pollService';
-import { hasUserVotedInPoll } from '../../services/userService';
+import { getActivePollsForUser, hasVotedInPoll } from '../../services/pollService';
 import { getCurrentUserData } from '../../services/authService';
 import { formatDateShort, getStatusLabel } from '../../utils/helpers';
 import COLORS from '../../styles/colors';
@@ -41,7 +40,7 @@ const PollsListScreen = ({ navigation }) => {
         // Check vote status for each poll
         const voteStatus = {};
         for (const poll of result.polls) {
-          const voteResult = await hasUserVotedInPoll(poll.id);
+          const voteResult = await hasVotedInPoll(poll.id);
           if (voteResult.success) {
             voteStatus[poll.id] = voteResult.hasVoted;
           }
@@ -92,6 +91,11 @@ const PollsListScreen = ({ navigation }) => {
           </View>
         </View>
 
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Starts:</Text>
+          <Text style={styles.infoValue}>{formatDateShort(item.start_date)}</Text>
+        </View>
+        
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Ends:</Text>
           <Text style={styles.infoValue}>{formatDateShort(item.end_date)}</Text>

@@ -255,6 +255,43 @@ export const updateProfilePicture = async (photoUri) => {
 };
 
 /**
+ * Remove profile picture
+ */
+export const removeProfilePicture = async () => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      throw new Error('No user logged in');
+    }
+    
+    // Remove from Firebase Storage
+    try {
+      const reference = storage().ref(`profilePictures/${currentUser.uid}`);
+      await reference.delete();
+    } catch (storageError) {
+      // File may not exist, continue anyway
+      console.log('Profile picture not found in storage, continuing...');
+    }
+    
+    // Update Firestore to remove photo_url
+    await firestore()
+      .collection(COLLECTIONS.USERS)
+      .doc(currentUser.uid)
+      .update({
+        photo_url: null,
+      });
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Remove profile picture error:', error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
+/**
  * Reset password (send reset email)
  */
 export const resetPassword = async (universityId) => {
@@ -324,6 +361,7 @@ export default {
   getCurrentUserData,
   uploadProfilePicture,
   updateProfilePicture,
+  removeProfilePicture,
   resetPassword,
   isUserLoggedIn,
   onAuthStateChanged,

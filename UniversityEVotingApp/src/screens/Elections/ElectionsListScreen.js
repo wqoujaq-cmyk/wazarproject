@@ -8,8 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { getActiveElectionsForUser } from '../../services/electionService';
-import { hasVotedInElection } from '../../services/userService';
+import { getActiveElectionsForUser, hasVotedInElection } from '../../services/electionService';
 import { getCurrentUserData } from '../../services/authService';
 import { formatDateShort, getStatusLabel } from '../../utils/helpers';
 import COLORS from '../../styles/colors';

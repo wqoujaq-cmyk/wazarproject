@@ -6,11 +6,27 @@ import { canUserVoteInPoll, isActiveNow } from '../utils/helpers';
 /**
  * Get all active polls for a user based on their faculty
  */
+// Helper function to compute actual status based on dates
+const computeActualStatus = (item) => {
+  const now = new Date();
+  const startDate = item.start_date?.toDate ? item.start_date.toDate() : new Date(item.start_date);
+  const endDate = item.end_date?.toDate ? item.end_date.toDate() : new Date(item.end_date);
+  
+  if (now < startDate) {
+    return 'scheduled';
+  } else if (now >= startDate && now <= endDate) {
+    return 'active';
+  } else {
+    return 'closed';
+  }
+};
+
 export const getActivePollsForUser = async (userFaculty) => {
   try {
+    // Fetch all non-draft polls (active, scheduled, and closed for results)
     const pollsSnapshot = await firestore()
       .collection(COLLECTIONS.POLLS)
-      .where('status', 'in', ['active', 'scheduled'])
+      .where('status', 'in', ['active', 'scheduled', 'closed'])
       .get();
     
     const polls = [];
@@ -19,14 +35,19 @@ export const getActivePollsForUser = async (userFaculty) => {
       
       // Check if user can vote in this poll
       if (canUserVoteInPoll(userFaculty, poll)) {
-        // Check if poll is currently active
-        const status = isActiveNow(poll.start_date, poll.end_date) ? 'active' : 'scheduled';
-        polls.push({ ...poll, computed_status: status });
+        // Compute actual status based on dates (not stored status)
+        const computed_status = computeActualStatus(poll);
+        polls.push({ ...poll, computed_status });
       }
     });
     
-    // Sort by start date
+    // Sort by status then start date
     polls.sort((a, b) => {
+      // Active first, then scheduled, then closed
+      const statusOrder = { active: 0, scheduled: 1, closed: 2 };
+      if (statusOrder[a.computed_status] !== statusOrder[b.computed_status]) {
+        return statusOrder[a.computed_status] - statusOrder[b.computed_status];
+      }
       const dateA = a.start_date.toDate ? a.start_date.toDate() : new Date(a.start_date);
       const dateB = b.start_date.toDate ? b.start_date.toDate() : new Date(b.start_date);
       return dateA - dateB;
@@ -77,16 +98,19 @@ export const getPollById = async (pollId) => {
  */
 export const getPollOptions = async (pollId) => {
   try {
+    // Query without orderBy to avoid requiring a composite index
     const optionsSnapshot = await firestore()
       .collection(COLLECTIONS.POLL_OPTIONS)
       .where('poll_id', '==', pollId)
-      .orderBy('order', 'asc')
       .get();
     
     const options = [];
     optionsSnapshot.forEach(doc => {
       options.push({ id: doc.id, ...doc.data() });
     });
+    
+    // Sort by order field client-side (more robust, no index needed)
+    options.sort((a, b) => (a.order || 0) - (b.order || 0));
     
     return {
       success: true,

@@ -5,7 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-} from 'react';
+} from 'react-native';
 import { formatDate, getStatusLabel } from '../../utils/helpers';
 import COLORS from '../../styles/colors';
 

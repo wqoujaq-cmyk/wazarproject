@@ -6,7 +6,9 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import {
   doc,
-  getDoc
+  getDoc,
+  collection,
+  getDocs
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
 let currentUser = null;
@@ -129,13 +131,152 @@ function showError(message) {
   document.getElementById('loginError').textContent = message;
 }
 
+// Helper to compute status based on dates
+function computeStatus(item) {
+  const now = new Date();
+  const startDate = item.start_date?.toDate ? item.start_date.toDate() : new Date(item.start_date);
+  const endDate = item.end_date?.toDate ? item.end_date.toDate() : new Date(item.end_date);
+  
+  if (now < startDate) return 'scheduled';
+  if (now >= startDate && now <= endDate) return 'active';
+  return 'closed';
+}
+
 async function loadDashboardStats() {
-  // This will be implemented to load dashboard statistics
-  // For now, just placeholder
-  document.getElementById('totalElections').textContent = '-';
-  document.getElementById('totalPolls').textContent = '-';
-  document.getElementById('totalUsers').textContent = '-';
-  document.getElementById('totalVotes').textContent = '-';
+  try {
+    // Load Elections
+    const electionsSnapshot = await getDocs(collection(db, COLLECTIONS.ELECTIONS));
+    const elections = [];
+    electionsSnapshot.forEach(doc => {
+      elections.push({ id: doc.id, ...doc.data() });
+    });
+    document.getElementById('totalElections').textContent = elections.length;
+
+    // Load Polls
+    const pollsSnapshot = await getDocs(collection(db, COLLECTIONS.POLLS));
+    const polls = [];
+    pollsSnapshot.forEach(doc => {
+      polls.push({ id: doc.id, ...doc.data() });
+    });
+    document.getElementById('totalPolls').textContent = polls.length;
+
+    // Load Users
+    const usersSnapshot = await getDocs(collection(db, COLLECTIONS.USERS));
+    document.getElementById('totalUsers').textContent = usersSnapshot.size;
+
+    // Load Votes (may fail if no permission - that's ok)
+    try {
+      const votesSnapshot = await getDocs(collection(db, COLLECTIONS.VOTES));
+      document.getElementById('totalVotes').textContent = votesSnapshot.size;
+    } catch (e) {
+      document.getElementById('totalVotes').textContent = '0';
+    }
+
+    // Render Recent Elections
+    renderRecentElections(elections);
+    
+    // Render Recent Polls
+    renderRecentPolls(polls);
+
+  } catch (error) {
+    console.error('Error loading dashboard stats:', error);
+    document.getElementById('totalElections').textContent = '0';
+    document.getElementById('totalPolls').textContent = '0';
+    document.getElementById('totalUsers').textContent = '0';
+    document.getElementById('totalVotes').textContent = '0';
+  }
+}
+
+function renderRecentElections(elections) {
+  const container = document.getElementById('recentElectionsList');
+  if (!container) return;
+
+  if (elections.length === 0) {
+    container.innerHTML = '<p class="no-data">No elections created yet</p>';
+    return;
+  }
+
+  // Sort by created_at or start_date, most recent first
+  elections.sort((a, b) => {
+    const dateA = a.created_at?.toDate ? a.created_at.toDate() : new Date(a.start_date);
+    const dateB = b.created_at?.toDate ? b.created_at.toDate() : new Date(b.start_date);
+    return dateB - dateA;
+  });
+
+  let html = '<div class="recent-items-grid">';
+  
+  elections.slice(0, 5).forEach(election => {
+    const status = computeStatus(election);
+    const startDate = election.start_date?.toDate ? election.start_date.toDate() : new Date(election.start_date);
+    const endDate = election.end_date?.toDate ? election.end_date.toDate() : new Date(election.end_date);
+    
+    const statusClass = status === 'active' ? 'status-active' : 
+                        status === 'scheduled' ? 'status-scheduled' : 'status-closed';
+    const statusIcon = status === 'active' ? '🔴' : 
+                       status === 'scheduled' ? '📅' : '✅';
+    
+    html += `
+      <div class="recent-item-card">
+        <div class="recent-item-header">
+          <h4>${election.title}</h4>
+          <span class="status-badge ${statusClass}">${statusIcon} ${status.toUpperCase()}</span>
+        </div>
+        <div class="recent-item-meta">
+          <span>📅 ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</span>
+          <span>🎯 ${election.faculty_scope_type || 'All Faculties'}</span>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderRecentPolls(polls) {
+  const container = document.getElementById('recentPollsList');
+  if (!container) return;
+
+  if (polls.length === 0) {
+    container.innerHTML = '<p class="no-data">No polls created yet</p>';
+    return;
+  }
+
+  // Sort by created_at or start_date, most recent first
+  polls.sort((a, b) => {
+    const dateA = a.created_at?.toDate ? a.created_at.toDate() : new Date(a.start_date);
+    const dateB = b.created_at?.toDate ? b.created_at.toDate() : new Date(b.start_date);
+    return dateB - dateA;
+  });
+
+  let html = '<div class="recent-items-grid">';
+  
+  polls.slice(0, 5).forEach(poll => {
+    const status = computeStatus(poll);
+    const startDate = poll.start_date?.toDate ? poll.start_date.toDate() : new Date(poll.start_date);
+    const endDate = poll.end_date?.toDate ? poll.end_date.toDate() : new Date(poll.end_date);
+    
+    const statusClass = status === 'active' ? 'status-active' : 
+                        status === 'scheduled' ? 'status-scheduled' : 'status-closed';
+    const statusIcon = status === 'active' ? '🔴' : 
+                       status === 'scheduled' ? '📅' : '✅';
+    
+    html += `
+      <div class="recent-item-card">
+        <div class="recent-item-header">
+          <h4>${poll.title}</h4>
+          <span class="status-badge ${statusClass}">${statusIcon} ${status.toUpperCase()}</span>
+        </div>
+        <div class="recent-item-meta">
+          <span>📅 ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</span>
+          <span>🎯 ${poll.target_type || 'All Faculties'}</span>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
 }
 
 export function getCurrentUser() {

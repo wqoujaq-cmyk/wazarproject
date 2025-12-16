@@ -66,9 +66,9 @@ service cloud.firestore {
     
     // Votes Collection - Critical security rules
     match /Votes/{voteId} {
-      // Users can only read their own votes
-      // Admins cannot read individual votes (for privacy)
-      allow read: if false; // Votes are private
+      // Admins can read votes for results display
+      // Regular users cannot read votes (privacy)
+      allow read: if isAdmin();
       
       // Users can only create one vote per election
       allow create: if isAuthenticated() &&
@@ -103,8 +103,9 @@ service cloud.firestore {
     
     // PollVotes Collection - Critical security rules
     match /PollVotes/{pollVoteId} {
-      // Users can only read their own poll votes
-      allow read: if false; // Poll votes are private
+      // Admins can read poll votes for results display
+      // Regular users cannot read votes (privacy)
+      allow read: if isAdmin();
       
       // Users can only create one vote per poll
       allow create: if isAuthenticated() &&

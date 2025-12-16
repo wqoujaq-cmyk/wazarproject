@@ -121,10 +121,19 @@
                     </div>
                 </div>
                 
-                <div class="section">
-                    <h3>Recent Elections</h3>
-                    <div id="recentElectionsList" class="list-container">
-                        <p class="loading">Loading...</p>
+                <div class="dashboard-sections">
+                    <div class="section">
+                        <h3>🗳️ Recent Elections</h3>
+                        <div id="recentElectionsList" class="list-container">
+                            <p class="loading">Loading...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📋 Recent Polls</h3>
+                        <div id="recentPollsList" class="list-container">
+                            <p class="loading">Loading...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -175,11 +184,86 @@
 
             <!-- Results Page -->
             <div id="resultsPage" class="page">
-                <h2>Results & Analytics</h2>
-                <div class="section">
-                    <h3>Election Results</h3>
-                    <div id="electionResultsList" class="list-container">
-                        <p class="loading">Loading...</p>
+                <div class="results-header">
+                    <h2>Results & Analytics</h2>
+                    <div class="results-controls">
+                        <button class="btn btn-secondary" id="refreshResultsBtn" onclick="refreshAllResults()">
+                            🔄 Refresh
+                        </button>
+                        <div class="live-indicator" id="liveIndicator">
+                            <span class="live-dot"></span>
+                            <span>Live Updates</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Stats Summary -->
+                <div class="results-stats-grid" id="resultsStatsGrid">
+                    <div class="results-stat-card">
+                        <div class="results-stat-icon">🗳️</div>
+                        <div class="results-stat-value" id="activeElectionsCount">0</div>
+                        <div class="results-stat-label">Active Elections</div>
+                    </div>
+                    <div class="results-stat-card">
+                        <div class="results-stat-icon">✅</div>
+                        <div class="results-stat-value" id="totalVotesCast">0</div>
+                        <div class="results-stat-label">Total Votes Cast</div>
+                    </div>
+                    <div class="results-stat-card">
+                        <div class="results-stat-icon">📋</div>
+                        <div class="results-stat-value" id="activePollsCount">0</div>
+                        <div class="results-stat-label">Active Polls</div>
+                    </div>
+                    <div class="results-stat-card">
+                        <div class="results-stat-icon">👥</div>
+                        <div class="results-stat-value" id="totalParticipants">0</div>
+                        <div class="results-stat-label">Unique Voters</div>
+                    </div>
+                </div>
+
+                <!-- Results Tabs -->
+                <div class="results-tabs">
+                    <button class="results-tab active" data-tab="active-elections" onclick="switchResultsTab('active-elections')">
+                        🔴 Active Elections
+                    </button>
+                    <button class="results-tab" data-tab="closed-elections" onclick="switchResultsTab('closed-elections')">
+                        ✅ Closed Elections
+                    </button>
+                    <button class="results-tab" data-tab="polls" onclick="switchResultsTab('polls')">
+                        📊 Poll Results
+                    </button>
+                </div>
+
+                <!-- Active Elections Tab -->
+                <div class="results-tab-content active" id="active-elections-tab">
+                    <div class="section-header">
+                        <h3>🔴 Live Election Results</h3>
+                        <span class="update-time" id="activeElectionsUpdateTime"></span>
+                    </div>
+                    <div id="activeElectionsList" class="results-cards-container">
+                        <p class="loading">Loading active elections...</p>
+                    </div>
+                </div>
+
+                <!-- Closed Elections Tab -->
+                <div class="results-tab-content" id="closed-elections-tab">
+                    <div class="section-header">
+                        <h3>✅ Final Election Results</h3>
+                        <span class="update-time" id="closedElectionsUpdateTime"></span>
+                    </div>
+                    <div id="closedElectionsList" class="results-cards-container">
+                        <p class="loading">Loading closed elections...</p>
+                    </div>
+                </div>
+
+                <!-- Polls Tab -->
+                <div class="results-tab-content" id="polls-tab">
+                    <div class="section-header">
+                        <h3>📊 Poll Results</h3>
+                        <span class="update-time" id="pollsUpdateTime"></span>
+                    </div>
+                    <div id="pollResultsList" class="results-cards-container">
+                        <p class="loading">Loading polls...</p>
                     </div>
                 </div>
             </div>
@@ -738,8 +822,8 @@
         import { loadElections } from './js/elections.js';
         import { loadCandidates } from './js/candidates.js';
         import { initEmails, checkEmailConfig } from './js/emails.js';
-        import './js/polls.js';
-        import './js/results.js';
+        import { loadPolls } from './js/polls.js';
+        import { initResultsPage } from './js/results.js';
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', () => {
@@ -774,8 +858,14 @@
                 case 'candidates':
                     loadCandidates();
                     break;
+                case 'polls':
+                    loadPolls();
+                    break;
                 case 'users':
                     loadUsers();
+                    break;
+                case 'results':
+                    initResultsPage();
                     break;
                 case 'emails':
                     checkEmailConfig();

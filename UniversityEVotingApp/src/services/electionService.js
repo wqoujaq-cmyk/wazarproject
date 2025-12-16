@@ -6,13 +6,27 @@ import { canUserVoteInElection, isActiveNow } from '../utils/helpers';
 /**
  * Get all active elections for a user based on their faculty
  */
+// Helper function to compute actual status based on dates
+const computeActualStatus = (item) => {
+  const now = new Date();
+  const startDate = item.start_date?.toDate ? item.start_date.toDate() : new Date(item.start_date);
+  const endDate = item.end_date?.toDate ? item.end_date.toDate() : new Date(item.end_date);
+  
+  if (now < startDate) {
+    return 'scheduled';
+  } else if (now >= startDate && now <= endDate) {
+    return 'active';
+  } else {
+    return 'closed';
+  }
+};
+
 export const getActiveElectionsForUser = async (userFaculty) => {
   try {
-    const now = new Date();
-    
+    // Fetch all non-draft elections (active, scheduled, and closed for results)
     const electionsSnapshot = await firestore()
       .collection(COLLECTIONS.ELECTIONS)
-      .where('status', 'in', ['active', 'scheduled'])
+      .where('status', 'in', ['active', 'scheduled', 'closed'])
       .get();
     
     const elections = [];
@@ -21,14 +35,19 @@ export const getActiveElectionsForUser = async (userFaculty) => {
       
       // Check if user can vote in this election
       if (canUserVoteInElection(userFaculty, election)) {
-        // Check if election is currently active
-        const status = isActiveNow(election.start_date, election.end_date) ? 'active' : 'scheduled';
-        elections.push({ ...election, computed_status: status });
+        // Compute actual status based on dates (not stored status)
+        const computed_status = computeActualStatus(election);
+        elections.push({ ...election, computed_status });
       }
     });
     
-    // Sort by start date
+    // Sort by start date (most recent first for active, oldest first for scheduled)
     elections.sort((a, b) => {
+      // Active first, then scheduled, then closed
+      const statusOrder = { active: 0, scheduled: 1, closed: 2 };
+      if (statusOrder[a.computed_status] !== statusOrder[b.computed_status]) {
+        return statusOrder[a.computed_status] - statusOrder[b.computed_status];
+      }
       const dateA = a.start_date.toDate ? a.start_date.toDate() : new Date(a.start_date);
       const dateB = b.start_date.toDate ? b.start_date.toDate() : new Date(b.start_date);
       return dateA - dateB;

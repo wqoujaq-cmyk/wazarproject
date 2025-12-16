@@ -2,6 +2,7 @@ import { db, COLLECTIONS } from './firebase-config.js';
 import {
   collection,
   getDocs,
+  getDoc,
   doc,
   addDoc,
   updateDoc,
@@ -10,6 +11,9 @@ import {
   orderBy,
   Timestamp
 } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+// Track if we're editing an existing candidate
+let editingCandidateId = null;
 
 export async function loadCandidates() {
   const container = document.getElementById('candidatesList');
@@ -52,14 +56,73 @@ export async function loadCandidates() {
   }
 }
 
-// Export to window for onclick handlers
+// Load elections for the dropdown
+async function loadElectionsDropdown() {
+  try {
+    const electionsSnapshot = await getDocs(collection(db, COLLECTIONS.ELECTIONS));
+    const select = document.getElementById('candidateElection');
+    select.innerHTML = '<option value="">Select election...</option>';
+    
+    electionsSnapshot.forEach(docSnap => {
+      const election = docSnap.data();
+      const option = document.createElement('option');
+      option.value = docSnap.id;
+      option.textContent = election.title;
+      select.appendChild(option);
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error loading elections:', error);
+    return false;
+  }
+}
+
+// Edit Candidate - Load data and open modal
 window.editCandidate = async function(candidateId) {
-  alert(`Edit candidate feature would open a modal for candidate: ${candidateId}`);
-  // Implement edit modal here
+  try {
+    // Fetch candidate data from Firebase
+    const candidateDoc = await getDoc(doc(db, COLLECTIONS.CANDIDATES, candidateId));
+    
+    if (!candidateDoc.exists()) {
+      alert('Candidate not found');
+      return;
+    }
+    
+    const candidate = candidateDoc.data();
+    
+    // Store the ID we're editing
+    editingCandidateId = candidateId;
+    
+    // Update modal title
+    const modalHeader = document.querySelector('#candidateModal .modal-header h2');
+    if (modalHeader) {
+      modalHeader.textContent = 'Edit Candidate';
+    }
+    
+    // Load elections dropdown first
+    await loadElectionsDropdown();
+    
+    // Populate form fields
+    document.getElementById('candidateName').value = candidate.name || '';
+    document.getElementById('candidateElection').value = candidate.election_id || '';
+    document.getElementById('candidateFaculty').value = candidate.faculty || '';
+    document.getElementById('candidateBio').value = candidate.bio || '';
+    
+    // Clear any previous errors
+    document.getElementById('candidateError').textContent = '';
+    
+    // Open the modal
+    document.getElementById('candidateModal').classList.add('active');
+    
+  } catch (error) {
+    console.error('Error loading candidate for edit:', error);
+    alert('Error loading candidate: ' + error.message);
+  }
 };
 
 window.deleteCandidate = async function(candidateId) {
-  if (confirm('Are you sure you want to delete this candidate?')) {
+  if (confirm('Are you sure you want to delete this candidate? This action cannot be undone.')) {
     try {
       await deleteDoc(doc(db, COLLECTIONS.CANDIDATES, candidateId));
       alert('Candidate deleted successfully');
@@ -73,22 +136,21 @@ window.deleteCandidate = async function(candidateId) {
 
 // Modal functions
 window.openCandidateModal = async function() {
-  // Load elections for dropdown
-  try {
-    const electionsSnapshot = await getDocs(collection(db, COLLECTIONS.ELECTIONS));
-    const select = document.getElementById('candidateElection');
-    select.innerHTML = '<option value="">Select election...</option>';
-    
-    electionsSnapshot.forEach(doc => {
-      const election = doc.data();
-      const option = document.createElement('option');
-      option.value = doc.id;
-      option.textContent = election.title;
-      select.appendChild(option);
-    });
-  } catch (error) {
-    console.error('Error loading elections:', error);
+  // Reset for creating new candidate
+  editingCandidateId = null;
+  
+  // Update modal title
+  const modalHeader = document.querySelector('#candidateModal .modal-header h2');
+  if (modalHeader) {
+    modalHeader.textContent = 'Add Candidate';
   }
+  
+  // Reset form
+  document.getElementById('candidateForm').reset();
+  document.getElementById('candidateError').textContent = '';
+  
+  // Load elections for dropdown
+  await loadElectionsDropdown();
   
   document.getElementById('candidateModal').classList.add('active');
 };
@@ -96,36 +158,64 @@ window.openCandidateModal = async function() {
 window.closeCandidateModal = function() {
   document.getElementById('candidateModal').classList.remove('active');
   document.getElementById('candidateForm').reset();
+  document.getElementById('candidateError').textContent = '';
+  editingCandidateId = null;
 };
 
-// Form submission
+// Form submission - handles both Create and Update
 document.getElementById('candidateForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   
-  const name = document.getElementById('candidateName').value;
+  const name = document.getElementById('candidateName').value.trim();
   const electionId = document.getElementById('candidateElection').value;
   const faculty = document.getElementById('candidateFaculty').value;
-  const bio = document.getElementById('candidateBio').value;
+  const bio = document.getElementById('candidateBio').value.trim();
+  
+  // Validation
+  if (!name) {
+    document.getElementById('candidateError').textContent = 'Please enter a name';
+    return;
+  }
+  
+  if (!electionId) {
+    document.getElementById('candidateError').textContent = 'Please select an election';
+    return;
+  }
+  
+  if (!faculty) {
+    document.getElementById('candidateError').textContent = 'Please select a faculty';
+    return;
+  }
+  
+  const candidateData = {
+    name,
+    election_id: electionId,
+    faculty,
+    bio,
+    updated_at: Timestamp.now()
+  };
   
   try {
-    await addDoc(collection(db, COLLECTIONS.CANDIDATES), {
-      name,
-      election_id: electionId,
-      faculty,
-      bio,
-      photo_url: null,
-      created_at: Timestamp.now()
-    });
-    
-    closeCandidateModal();
-    loadCandidates();
-    alert('Candidate added successfully!');
+    if (editingCandidateId) {
+      // UPDATE existing candidate
+      await updateDoc(doc(db, COLLECTIONS.CANDIDATES, editingCandidateId), candidateData);
+      closeCandidateModal();
+      loadCandidates();
+      alert('Candidate updated successfully!');
+    } else {
+      // CREATE new candidate
+      candidateData.photo_url = null;
+      candidateData.created_at = Timestamp.now();
+      await addDoc(collection(db, COLLECTIONS.CANDIDATES), candidateData);
+      closeCandidateModal();
+      loadCandidates();
+      alert('Candidate added successfully!');
+    }
   } catch (error) {
-    console.error('Error creating candidate:', error);
-    document.getElementById('candidateError').textContent = 'Error adding candidate: ' + error.message;
+    console.error('Error saving candidate:', error);
+    document.getElementById('candidateError').textContent = 'Error saving candidate: ' + error.message;
   }
 });
 
 // Initialize
 document.getElementById('createCandidateBtn')?.addEventListener('click', openCandidateModal);
-
