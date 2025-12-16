@@ -29,8 +29,9 @@ service cloud.firestore {
     match /Users/{userId} {
       // Users can read their own document
       // Admins can read any user document (get) and list all users (list)
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
+      // Allow unauthenticated read for password reset flow (to find user by university_id)
+      allow get: if true;
+      allow list: if true;
       
       // Users can create their own document during self-registration
       // Allow creation if user is authenticated and creating their own document
@@ -129,8 +130,9 @@ service cloud.firestore {
       // Anyone can read tokens (to verify) - tokens are validated by matching university_id
       allow read: if true;
       
-      // Authenticated users can create tokens (from mobile app)
-      allow create: if isAuthenticated();
+      // Anyone can create tokens (user isn't logged in when they forgot password!)
+      // Security: token is linked to university_id and sent to registered email only
+      allow create: if true;
       
       // Allow update to mark tokens as used
       allow update: if true;

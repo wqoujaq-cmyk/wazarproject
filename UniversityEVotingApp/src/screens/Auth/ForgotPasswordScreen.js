@@ -15,14 +15,16 @@ import { firestore, COLLECTIONS } from '../../config/firebase';
 import COLORS from '../../styles/colors';
 
 // EmailJS Configuration
+// Get your private key from: https://dashboard.emailjs.com/admin/account
 const EMAILJS_CONFIG = {
   serviceId: 'service_ly8htul',
   templateId: 'template_cr3mrly',  // Password reset template
   publicKey: 'EPO61S4tPNKPKy6UH',
+  privateKey: '', // TODO: Add your private key from EmailJS dashboard
 };
 
 // Password Reset Portal URL - UPDATE THIS with your actual hosted URL
-const RESET_PORTAL_URL = 'https://wazar-1a851.web.app/reset-password.html';
+const RESET_PORTAL_URL = 'https://universityevoting2.web.app/reset-password.html';
 
 // Generate a 6-digit reset token
 const generateResetToken = () => {
@@ -43,12 +45,21 @@ const ForgotPasswordScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
+      console.log('Step 1: Searching for user...');
+      
       // Find user by university_id in Firestore
-      const usersSnapshot = await firestore()
-        .collection(COLLECTIONS.USERS)
-        .where('university_id', '==', universityId.toUpperCase())
-        .limit(1)
-        .get();
+      let usersSnapshot;
+      try {
+        usersSnapshot = await firestore()
+          .collection(COLLECTIONS.USERS)
+          .where('university_id', '==', universityId.toUpperCase())
+          .limit(1)
+          .get();
+      } catch (queryError) {
+        Alert.alert('Error Step 1', `Failed to search users: ${queryError.message}`);
+        setLoading(false);
+        return;
+      }
 
       if (usersSnapshot.empty) {
         Alert.alert('Not Found', 'No account found with this University ID');
@@ -56,6 +67,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
         return;
       }
 
+      console.log('Step 2: Found user, getting data...');
       const userData = usersSnapshot.docs[0].data();
       const contactEmail = userData.contact_email;
 
@@ -68,61 +80,75 @@ const ForgotPasswordScreen = ({ navigation }) => {
         return;
       }
 
+      console.log('Step 3: Creating reset token...');
       // Generate a unique reset token
       const resetToken = generateResetToken();
       
       // Store the token in Firestore
-      await firestore()
-        .collection('PasswordResetTokens')
-        .add({
-          university_id: universityId.toUpperCase(),
-          user_id: usersSnapshot.docs[0].id,
-          token: resetToken,
-          created_at: new Date(),
-          used: false,
-          contact_email: contactEmail,
-        });
+      try {
+        await firestore()
+          .collection('PasswordResetTokens')
+          .add({
+            university_id: universityId.toUpperCase(),
+            user_id: usersSnapshot.docs[0].id,
+            token: resetToken,
+            created_at: new Date(),
+            used: false,
+            contact_email: contactEmail,
+          });
+      } catch (tokenError) {
+        Alert.alert('Error Step 3', `Failed to create reset token: ${tokenError.message}`);
+        setLoading(false);
+        return;
+      }
 
+      console.log('Step 4: Sending email...');
       // Create reset link with token and ID
       const resetLink = `${RESET_PORTAL_URL}?token=${resetToken}&id=${universityId.toUpperCase()}`;
 
       // Send password reset email via EmailJS
-      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          service_id: EMAILJS_CONFIG.serviceId,
-          template_id: EMAILJS_CONFIG.templateId,
-          user_id: EMAILJS_CONFIG.publicKey,
-          template_params: {
-            to_name: userData.name,
-            to_email: contactEmail,
-            university_id: universityId.toUpperCase(),
-            user_name: userData.name,
-            reset_token: resetToken,
-            reset_link: resetLink,
-            expiry_time: '24 hours',
+      try {
+        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        }),
-      });
+          body: JSON.stringify({
+            service_id: EMAILJS_CONFIG.serviceId,
+            template_id: EMAILJS_CONFIG.templateId,
+            user_id: EMAILJS_CONFIG.publicKey,
+            accessToken: EMAILJS_CONFIG.privateKey, // Required for mobile apps
+            template_params: {
+              to_name: userData.name,
+              to_email: contactEmail,
+              university_id: universityId.toUpperCase(),
+              user_name: userData.name,
+              reset_token: resetToken,
+              reset_link: resetLink,
+              expiry_time: '24 hours',
+            },
+          }),
+        });
 
-      if (response.ok) {
-        setSent(true);
-        Alert.alert(
-          'Reset Link Sent! ✉️',
-          `A password reset link has been sent to ${contactEmail}.\n\nThe link contains your 6-digit verification code.\n\nThis link will expire in 24 hours.`,
-          [{ text: 'OK', onPress: () => navigation.goBack() }]
-        );
-      } else {
-        throw new Error('Failed to send email');
+        if (response.ok) {
+          setSent(true);
+          Alert.alert(
+            'Reset Link Sent! ✉️',
+            `A password reset link has been sent to ${contactEmail}.\n\nThe link contains your 6-digit verification code.\n\nThis link will expire in 24 hours.`,
+            [{ text: 'OK', onPress: () => navigation.goBack() }]
+          );
+        } else {
+          const errorText = await response.text();
+          Alert.alert('Error Step 4', `Email failed: ${response.status} - ${errorText}`);
+        }
+      } catch (emailError) {
+        Alert.alert('Error Step 4', `Email error: ${emailError.message}`);
       }
     } catch (error) {
       console.error('Password reset error:', error);
       Alert.alert(
-        'Error',
-        'Failed to process your request. Please try again or contact the administrator.'
+        'Unexpected Error',
+        `Something went wrong.\n\nError: ${error.message || error.toString()}`
       );
     } finally {
       setLoading(false);

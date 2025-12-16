@@ -171,12 +171,12 @@ window.resetUserPassword = async function(userId, universityId) {
   try {
     // Firebase config (same as main app)
     const firebaseConfig = {
-      apiKey: "AIzaSyCw3WEk0MShGTwLEpO7I8Y85Jv97n06fc4",
-      authDomain: "wazar-1a851.firebaseapp.com",
-      projectId: "wazar-1a851",
-      storageBucket: "wazar-1a851.firebasestorage.app",
-      messagingSenderId: "1091521735952",
-      appId: "1:1091521735952:web:4c04c10f77e9c71e9c1dfe"
+      apiKey: "AIzaSyApJ-yf788oQncbo2p3E0V9BMAyLEhY_cY",
+      authDomain: "universityevoting2.firebaseapp.com",
+      projectId: "universityevoting2",
+      storageBucket: "universityevoting2.firebasestorage.app",
+      messagingSenderId: "681736971312",
+      appId: "1:681736971312:web:51ff23b2ce275e461ff9f5"
     };
     
     // Create a secondary app for password reset
@@ -430,7 +430,7 @@ window.handleResetRequest = async function(requestId, universityId, contactEmail
   const email = `${universityId.toLowerCase()}@university.edu`;
   
   // Show instructions with the Firebase Console link
-  const firebaseConsoleUrl = 'https://console.firebase.google.com/project/wazar-1a851/authentication/users';
+  const firebaseConsoleUrl = 'https://console.firebase.google.com/project/universityevoting2/authentication/users';
   
   alert(
     `📋 Password Reset Instructions\n\n` +

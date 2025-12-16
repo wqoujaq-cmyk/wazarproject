@@ -37,6 +37,9 @@ DerivedData/
 # Metro
 .metro-health-check*
 
+# Firebase cache
+.firebase/
+
 # Misc
 .env
 .env.local
