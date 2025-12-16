@@ -1,5 +1,6 @@
 // Authentication Service
 import { auth, firestore, storage, COLLECTIONS, ROLES } from '../config/firebase';
+import firebase from '@react-native-firebase/firestore';
 
 // EmailJS Configuration for welcome emails
 const EMAILJS_CONFIG = {
@@ -85,7 +86,7 @@ export const registerUser = async (userData) => {
       photo_url: photoUrl,
       role: ROLES.VOTER,
       is_active: true,
-      created_at: firestore.FieldValue.serverTimestamp(),
+      created_at: firebase.FieldValue.serverTimestamp(),
     };
     
     await firestore()
@@ -134,7 +135,7 @@ export const registerUser = async (userData) => {
             name: userData.name,
             role: ROLES.VOTER,
             is_active: true,
-            created_at: firestore.FieldValue.serverTimestamp(),
+            created_at: firebase.FieldValue.serverTimestamp(),
           });
       } catch (retryError) {
         console.error('Retry create profile failed:', retryError);
@@ -176,7 +177,7 @@ export const loginUser = async (universityId, password) => {
         name: universityId, // Placeholder name
         role: ROLES.VOTER,
         is_active: true,
-        created_at: firestore.FieldValue.serverTimestamp(),
+        created_at: firebase.FieldValue.serverTimestamp(),
       };
       
       await firestore()
@@ -262,7 +263,7 @@ export const getCurrentUserData = async () => {
         major: 'Unknown',
         role: ROLES.VOTER,
         is_active: true,
-        created_at: firestore.FieldValue.serverTimestamp(),
+        created_at: firebase.FieldValue.serverTimestamp(),
       };
       
       try {

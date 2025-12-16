@@ -1,5 +1,6 @@
 // Poll Service
 import { firestore, COLLECTIONS } from '../config/firebase';
+import firebase from '@react-native-firebase/firestore';
 import { getCurrentUser } from './authService';
 import { canUserVoteInPoll, isActiveNow } from '../utils/helpers';
 
@@ -172,7 +173,7 @@ export const castPollVote = async (pollId, optionId, userFaculty) => {
         user_id: currentUser.uid,
         option_id: optionId,
         faculty: userFaculty,
-        timestamp: firestore.FieldValue.serverTimestamp(),
+        timestamp: firebase.FieldValue.serverTimestamp(),
       });
     
     return {
