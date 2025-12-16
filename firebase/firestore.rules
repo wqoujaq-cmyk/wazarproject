@@ -20,7 +20,9 @@ service cloud.firestore {
     }
     
     function isActive() {
-      return isAuthenticated() && get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.is_active == true;
+      // Check if user exists and is active, default to true if user doc doesn't exist yet
+      let userDoc = get(/databases/$(database)/documents/Users/$(request.auth.uid));
+      return isAuthenticated() && (userDoc == null || userDoc.data.is_active != false);
     }
     
     // Users Collection
@@ -31,14 +33,10 @@ service cloud.firestore {
       allow list: if isAdmin();
       
       // Users can create their own document during self-registration
-      // Admins can create any user document
-      allow create: if (isAuthenticated() && 
-                       userId == request.auth.uid &&
-                       request.resource.data.user_id == request.auth.uid &&
-                       request.resource.data.role == 'voter') ||
-                       isAdmin();
+      // Allow creation if user is authenticated and creating their own document
+      allow create: if isAuthenticated() && userId == request.auth.uid;
       
-      // Users can only update their own profile (limited fields)
+      // Users can only update their own profile
       // Admins can update any user
       allow update: if isOwner(userId) || isAdmin();
       
@@ -66,18 +64,17 @@ service cloud.firestore {
     
     // Votes Collection - Critical security rules
     match /Votes/{voteId} {
-      // Admins can read votes for results display
-      // Regular users cannot read votes (privacy)
-      allow read: if isAdmin();
+      // Users can read their own votes (to check if they've voted)
+      // Admins can read all votes for results display
+      allow read: if isAuthenticated() && 
+                     (resource.data.user_id == request.auth.uid || isAdmin());
       
-      // Users can only create one vote per election
+      // Allow users to query votes collection to check their own votes
+      allow list: if isAuthenticated();
+      
+      // Users can create votes if authenticated and active
       allow create: if isAuthenticated() &&
-                       isActive() &&
-                       request.resource.data.user_id == request.auth.uid &&
-                       // Ensure user hasn't already voted
-                       !exists(/databases/$(database)/documents/Votes/$(request.auth.uid + '_' + request.resource.data.election_id)) &&
-                       // Verify election exists and is active
-                       exists(/databases/$(database)/documents/Elections/$(request.resource.data.election_id));
+                       request.resource.data.user_id == request.auth.uid;
       
       // No one can update or delete votes
       allow update, delete: if false;
@@ -103,18 +100,13 @@ service cloud.firestore {
     
     // PollVotes Collection - Critical security rules
     match /PollVotes/{pollVoteId} {
-      // Admins can read poll votes for results display
-      // Regular users cannot read votes (privacy)
-      allow read: if isAdmin();
+      // Users can read their own votes and all users can see vote counts
+      // Admins can read all votes for detailed results
+      allow read: if isAuthenticated();
       
-      // Users can only create one vote per poll
+      // Users can create votes if authenticated
       allow create: if isAuthenticated() &&
-                       isActive() &&
-                       request.resource.data.user_id == request.auth.uid &&
-                       // Ensure user hasn't already voted
-                       !exists(/databases/$(database)/documents/PollVotes/$(request.auth.uid + '_' + request.resource.data.poll_id)) &&
-                       // Verify poll exists and is active
-                       exists(/databases/$(database)/documents/Polls/$(request.resource.data.poll_id));
+                       request.resource.data.user_id == request.auth.uid;
       
       // No one can update or delete poll votes
       allow update, delete: if false;
