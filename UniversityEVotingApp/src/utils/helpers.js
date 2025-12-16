@@ -130,8 +130,18 @@ export const getInitials = (name) => {
 export const canUserVoteInElection = (userFaculty, election) => {
   if (!election) return false;
   
+  // If user faculty is 'All' or 'Unknown', show all elections
+  if (!userFaculty || userFaculty === 'All' || userFaculty === 'Unknown') {
+    return true;
+  }
+  
   // If election is for all faculties
   if (election.faculty_scope_type === 'ALL_FACULTIES') {
+    return true;
+  }
+  
+  // If no scope specified, show to everyone
+  if (!election.faculty_scope_type && !election.faculty_scope) {
     return true;
   }
   
@@ -149,8 +159,18 @@ export const canUserVoteInElection = (userFaculty, election) => {
 export const canUserVoteInPoll = (userFaculty, poll) => {
   if (!poll) return false;
   
+  // If user faculty is 'All' or 'Unknown', show all polls
+  if (!userFaculty || userFaculty === 'All' || userFaculty === 'Unknown') {
+    return true;
+  }
+  
   // If poll is for all faculties
   if (poll.target_type === 'ALL_FACULTIES') {
+    return true;
+  }
+  
+  // If no scope specified, show to everyone
+  if (!poll.target_type && !poll.target_faculties) {
     return true;
   }
   

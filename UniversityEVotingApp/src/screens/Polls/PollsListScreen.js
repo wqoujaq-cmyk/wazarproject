@@ -26,12 +26,14 @@ const PollsListScreen = ({ navigation }) => {
   const loadPolls = async () => {
     try {
       const userResult = await getCurrentUserData();
-      if (!userResult.success) {
-        console.error('Failed to get user data');
-        return;
+      let faculty = 'All'; // Default to show all polls
+      
+      if (userResult.success && userResult.userData) {
+        faculty = userResult.userData.faculty || 'All';
+      } else {
+        console.warn('Could not get user data, showing all polls');
       }
 
-      const faculty = userResult.userData.faculty;
       const result = await getActivePollsForUser(faculty);
       
       if (result.success) {
@@ -40,12 +42,19 @@ const PollsListScreen = ({ navigation }) => {
         // Check vote status for each poll
         const voteStatus = {};
         for (const poll of result.polls) {
-          const voteResult = await hasVotedInPoll(poll.id);
-          if (voteResult.success) {
-            voteStatus[poll.id] = voteResult.hasVoted;
+          try {
+            const voteResult = await hasVotedInPoll(poll.id);
+            if (voteResult.success) {
+              voteStatus[poll.id] = voteResult.hasVoted;
+            }
+          } catch (voteCheckError) {
+            console.warn('Could not check vote status for poll:', poll.id);
+            voteStatus[poll.id] = false;
           }
         }
         setVotedPolls(voteStatus);
+      } else {
+        console.error('Failed to load polls:', result.error);
       }
     } catch (error) {
       console.error('Load polls error:', error);

@@ -50,6 +50,7 @@ const sendWelcomeEmail = async (userData) => {
  * Register a new user
  */
 export const registerUser = async (userData) => {
+  let uid = null;
   try {
     const { name, universityId, contactEmail, faculty, major, password, photoUri } = userData;
     
@@ -60,38 +61,57 @@ export const registerUser = async (userData) => {
     
     // Create Firebase Auth user
     const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-    const uid = userCredential.user.uid;
+    uid = userCredential.user.uid;
     
     // Upload profile picture if provided
     let photoUrl = null;
     if (photoUri) {
-      photoUrl = await uploadProfilePicture(uid, photoUri);
+      try {
+        photoUrl = await uploadProfilePicture(uid, photoUri);
+      } catch (photoError) {
+        console.warn('Failed to upload profile picture:', photoError);
+        // Continue without photo
+      }
     }
     
     // Create user document in Firestore
+    const userDocData = {
+      user_id: uid,
+      university_id: universityId,
+      contact_email: contactEmail,
+      name: name,
+      faculty: faculty,
+      major: major,
+      photo_url: photoUrl,
+      role: ROLES.VOTER,
+      is_active: true,
+      created_at: firestore.FieldValue.serverTimestamp(),
+    };
+    
     await firestore()
       .collection(COLLECTIONS.USERS)
       .doc(uid)
-      .set({
-        user_id: uid,
-        university_id: universityId,
-        contact_email: contactEmail,
-        name: name,
-        faculty: faculty,
-        major: major,
-        photo_url: photoUrl,
-        role: ROLES.VOTER,
-        is_active: true,
-        created_at: firestore.FieldValue.serverTimestamp(),
-      });
+      .set(userDocData);
     
-    // Send welcome email (non-blocking)
+    // Verify the document was created
+    const verifyDoc = await firestore()
+      .collection(COLLECTIONS.USERS)
+      .doc(uid)
+      .get();
+    
+    if (!verifyDoc.exists) {
+      throw new Error('Failed to create user profile. Please try logging in.');
+    }
+    
+    // Send welcome email (non-blocking, don't wait for result)
     sendWelcomeEmail({
       name,
       contactEmail,
       universityId,
       faculty,
       major,
+    }).catch(emailError => {
+      console.warn('Welcome email failed:', emailError);
     });
     
     return {
@@ -101,9 +121,29 @@ export const registerUser = async (userData) => {
     };
   } catch (error) {
     console.error('Registration error:', error);
+    
+    // If we created the auth user but Firestore failed, try to create basic profile
+    if (uid && error.message && error.message.includes('profile')) {
+      try {
+        await firestore()
+          .collection(COLLECTIONS.USERS)
+          .doc(uid)
+          .set({
+            user_id: uid,
+            university_id: userData.universityId,
+            name: userData.name,
+            role: ROLES.VOTER,
+            is_active: true,
+            created_at: firestore.FieldValue.serverTimestamp(),
+          });
+      } catch (retryError) {
+        console.error('Retry create profile failed:', retryError);
+      }
+    }
+    
     return {
       success: false,
-      error: getAuthErrorMessage(error.code),
+      error: getAuthErrorMessage(error.code) || error.message,
     };
   }
 };
@@ -126,14 +166,35 @@ export const loginUser = async (universityId, password) => {
       .doc(userCredential.user.uid)
       .get();
     
+    // If user document doesn't exist, create a basic one
+    // This handles cases where registration partially failed
     if (!userDoc.exists) {
-      throw new Error('User document not found');
+      console.log('User document not found, creating basic profile...');
+      const basicUserData = {
+        user_id: userCredential.user.uid,
+        university_id: universityId.toUpperCase(),
+        name: universityId, // Placeholder name
+        role: ROLES.VOTER,
+        is_active: true,
+        created_at: firestore.FieldValue.serverTimestamp(),
+      };
+      
+      await firestore()
+        .collection(COLLECTIONS.USERS)
+        .doc(userCredential.user.uid)
+        .set(basicUserData);
+      
+      return {
+        success: true,
+        user: userCredential.user,
+        userData: basicUserData,
+      };
     }
     
     const userData = userDoc.data();
     
-    // Check if user is active
-    if (!userData.is_active) {
+    // Check if user is active (with safe access)
+    if (userData && userData.is_active === false) {
       await auth().signOut();
       throw new Error('Account is inactive. Please contact administrator.');
     }
@@ -190,8 +251,40 @@ export const getCurrentUserData = async () => {
       .doc(currentUser.uid)
       .get();
     
+    // If user doc doesn't exist, create a basic one
     if (!userDoc.exists) {
-      return { success: false, error: 'User data not found' };
+      console.log('User document not found, creating basic profile...');
+      const basicUserData = {
+        user_id: currentUser.uid,
+        university_id: currentUser.email?.split('@')[0]?.toUpperCase() || 'UNKNOWN',
+        name: currentUser.email?.split('@')[0] || 'User',
+        faculty: 'Unknown',
+        major: 'Unknown',
+        role: ROLES.VOTER,
+        is_active: true,
+        created_at: firestore.FieldValue.serverTimestamp(),
+      };
+      
+      try {
+        await firestore()
+          .collection(COLLECTIONS.USERS)
+          .doc(currentUser.uid)
+          .set(basicUserData);
+        
+        return {
+          success: true,
+          userData: basicUserData,
+          needsUpdate: true, // Flag that profile needs to be updated
+        };
+      } catch (createError) {
+        console.error('Failed to create user profile:', createError);
+        // Return basic data even if save fails
+        return {
+          success: true,
+          userData: basicUserData,
+          needsUpdate: true,
+        };
+      }
     }
     
     return {

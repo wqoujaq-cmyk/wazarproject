@@ -28,13 +28,14 @@ const ElectionsListScreen = ({ navigation }) => {
     try {
       // Get user data
       const userResult = await getCurrentUserData();
-      if (!userResult.success) {
-        console.error('Failed to get user data');
-        return;
-      }
+      let faculty = 'All'; // Default to show all elections
       
-      const faculty = userResult.userData.faculty;
-      setUserFaculty(faculty);
+      if (userResult.success && userResult.userData) {
+        faculty = userResult.userData.faculty || 'All';
+        setUserFaculty(faculty);
+      } else {
+        console.warn('Could not get user data, showing all elections');
+      }
 
       // Get elections
       const result = await getActiveElectionsForUser(faculty);
@@ -44,12 +45,19 @@ const ElectionsListScreen = ({ navigation }) => {
         // Check vote status for each election
         const voteStatus = {};
         for (const election of result.elections) {
-          const voteResult = await hasVotedInElection(election.id);
-          if (voteResult.success) {
-            voteStatus[election.id] = voteResult.hasVoted;
+          try {
+            const voteResult = await hasVotedInElection(election.id);
+            if (voteResult.success) {
+              voteStatus[election.id] = voteResult.hasVoted;
+            }
+          } catch (voteCheckError) {
+            console.warn('Could not check vote status for election:', election.id);
+            voteStatus[election.id] = false;
           }
         }
         setVotedElections(voteStatus);
+      } else {
+        console.error('Failed to load elections:', result.error);
       }
     } catch (error) {
       console.error('Load elections error:', error);

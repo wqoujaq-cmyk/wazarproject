@@ -1,0 +1,16 @@
+{
+  "name": "evoting-admin-panel",
+  "version": "1.0.0",
+  "description": "University E-Voting Admin Panel",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "npx serve -l 3000"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
+
